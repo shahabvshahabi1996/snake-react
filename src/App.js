@@ -5,15 +5,26 @@ class App extends Component {
   constructor() {
     super();
     let cells = [];
-    for(let i=0;i<144;i++) {
-      cells.push(i);
+    for(let i=0;i<12;i++) {
+      const cols = [];
+      for(let j=0;j<12;j++) {
+        cols.push({i,j});
+      }
+      cells.push(cols);
     }
 
-    let apple = this.getRandNumber();
     this.state = {
       cells,
-      apple,
-      snakeHead : 77
+      apple : {
+        x : this.getRandNumber(),
+        y : this.getRandNumber()
+      },
+      snake : {
+        head : {
+          x : 5,
+          y : 5
+        }
+      }
     }
   }
 
@@ -22,41 +33,129 @@ class App extends Component {
   }
 
   getRandNumber() {
-    return Math.floor(Math.random() * 144);
+    return Math.floor(Math.random() * 12);
+  }
+
+  checkConflict = () => {
+    let {snake , apple} = this.state;
+    if(apple.x === snake.head.x && apple.y === snake.head.y) {
+      this.setState({apple :  {
+        x : this.getRandNumber(),
+        y : this.getRandNumber()
+      }});
+    }
+  }
+
+
+  goUp = () => {
+    this.checkConflict();
+    this.setState({snake : {
+      head : {
+        x : this.state.snake.head.x,
+        y : this.state.snake.head.y - 1
+      }
+    }});
+  }
+
+  goDown = () => {
+    this.checkConflict();
+    this.setState({snake : {
+      head : {
+        x : this.state.snake.head.x,
+        y : this.state.snake.head.y + 1
+      }
+    }});
+  }
+
+  goRight = () => {
+    this.checkConflict();
+    this.setState({snake : {
+      head : {
+        x : this.state.snake.head.x + 1,
+        y : this.state.snake.head.y
+      }
+    }});
+  }
+
+  goLeft = () => {
+    this.checkConflict();
+    this.setState({snake : {
+      head : {
+        x : this.state.snake.head.x - 1 ,
+        y : this.state.snake.head.y
+      }
+    }});
   }
 
   handleKeyPress = (e) => {
+
+    let {intervalFn} = this.state;
+
+    var intervalMovements;
+
+    if(intervalFn) {
+      clearInterval(intervalFn)
+    }
+    
     switch(e.key) {
-      case "ArrowUp":
-        return this.setState({snakeHead : this.state.snakeHead - 12});
-      case "ArrowDown" :
-        return this.setState({snakeHead : this.state.snakeHead + 12});
-      case "ArrowRight" : 
-        return this.setState({snakeHead : this.state.snakeHead + 1});
-      case "ArrowLeft" :
-        return this.setState({snakeHead : this.state.snakeHead - 1});
+      case "ArrowUp": {
+        intervalMovements = setInterval(() => {
+          this.goUp();
+        },500)
+        this.setState({intervalFn : intervalMovements});
+        return;
+      }
+      case "ArrowDown" : {
+        intervalMovements = setInterval(() => {
+          this.goDown();
+        },500)
+        this.setState({intervalFn : intervalMovements});
+        return;
+      }
+      case "ArrowRight" : {
+        intervalMovements = setInterval(() => {
+          this.goRight();
+        },500)
+        this.setState({intervalFn : intervalMovements});
+        return;
+      } 
+      case "ArrowLeft" : {
+        intervalMovements = setInterval(() => {
+          this.goLeft();
+        },500)
+        this.setState({intervalFn : intervalMovements});
+        return;
+      }
       default :
+        clearInterval(intervalFn)
         return ;
     }
   }
 
+  isApple = (col,row) => {
+    let {apple} = this.state;
+    return apple.x === row && apple.y === col; 
+  }
+
+  isHead = (col,row) => {
+    let {snake} = this.state;
+    return snake.head.x === row && snake.head.y === col
+  }
+
   render() {
-    const {cells,apple,snakeHead} = this.state;
-    console.log(this.state);
+    const {cells} = this.state;
     return (
       <div>
         <header>
           <h1>React Snake Game</h1>
         </header>
         <div className="grid">
-          {cells.map((item) => {
-            if(item === apple) {
-              return <div key={item} className="cell apple"></div> 
-            } else if(item === snakeHead) {
-              return <div key={item} className="cell snake-head"></div> 
-            } else {
-              return <div key={item} className="cell"></div>
-            }
+          {cells.map((col) => {
+            return col.map((row,i) => {
+              return (
+                <div key={i} className={`cell ${this.isApple(row.i,row.j) ? 'apple' : this.isHead(row.i,row.j) ? 'snake-head' : ''}`}></div>
+              )
+            }) 
           })}
         </div>
       </div>
