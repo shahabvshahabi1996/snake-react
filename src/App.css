@@ -60,11 +60,44 @@ header > h1 {
 }
 
 .snake-head::after {
-  position: relative;
-  z-index: 10;
   content: "🐲";
 }
 
 .snake-tail {
   background-color: #27ae60;
+}
+
+.gameover {
+  width: 600px;
+  height: 600px;
+  background-color:#2525257f;
+  border-radius: 3px;
+  opacity: 0;
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-content: center;
+  align-items: center;
+}
+
+.active-over { 
+  opacity: 1;
+}
+
+.gameover > .text {
+  margin: 0 auto;
+  text-align: center;
+}
+.button { 
+  background-color: #fff;
+  padding: 15px;
+  width: 200px;
+  font-weight: bold;
+  border-radius: 5px;
+  font-size: 18px;
+  margin-top: 20px;
+  box-shadow: none !important;
+  border: none;
+  border-color: #fff;
+  cursor: pointer;
 }
