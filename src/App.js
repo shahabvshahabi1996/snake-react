@@ -23,10 +23,11 @@ class App extends Component {
         head : {
           x : 5,
           y : 5
-        }
+        },
+        tail : []
       },
       dir : {
-        x : 0,
+        x : 1,
         y : 0
       },
       gameover : false,
@@ -50,10 +51,11 @@ class App extends Component {
         head : {
           x : 5,
           y : 5
-        }
+        },
+        tail : []
       },
       dir : {
-        x : 0,
+        x : 1,
         y : 0
       },
       gameover : false,
@@ -66,25 +68,33 @@ class App extends Component {
   }
 
   gameLoop = () => {
-    this.setState({snake : {
+    this.setState((prevState) => ({snake : {
       head : {
-        x : this.state.snake.head.x + this.state.dir.x,
-        y : this.state.snake.head.y + this.state.dir.y
-      }
-    }})
-    this.checkConflict();
-    setTimeout(() => {
-      this.gameLoop()
-    },1000);
+        x : prevState.snake.head.x + prevState.dir.x,
+        y : prevState.snake.head.y + prevState.dir.y
+      },
+      tail : prevState.snake.tail.map((item) => {
+        return {x : item.x + prevState.dir.x,y : item.y + prevState.dir.y}
+      }) 
+    }}),() => {
+      this.checkConflict();
+      setTimeout(() => {
+        this.gameLoop()
+      },1000);
+    })
   } 
 
   checkConflict = () => {
-    let {snake , apple} = this.state;
+    let {snake , apple } = this.state;
     if(apple.x === snake.head.x && apple.y === snake.head.y) {
-      this.setState({apple :  {
-        x : this.getRandNumber(),
-        y : this.getRandNumber()
-      },score : this.state.score + 1});
+      this.setState({
+          apple :  {
+            x : this.getRandNumber(),
+            y : this.getRandNumber()
+          },
+          score : this.state.score + 1, 
+          tail : snake.tail.push(snake.head)
+      });
     } else if(snake.head.x > 11 || snake.head.x < 0 || snake.head.y > 11 || snake.head.y < 0) {
       this.setState({gameover : true , dir : {x : 0 , y : 0}});
     } else {
@@ -154,9 +164,22 @@ class App extends Component {
     return apple.x === row && row === snake.head.x && apple.y === col && col === snake.head.y;
   }
 
+  isTail = (col,row) => {
+    let {snake : {tail}} = this.state;
+    let res = false;
+    tail.map((item) => {
+      if(item.x === row && item.y === col) {
+        res = true
+      }
+
+      return item;
+    })
+    return res;  
+  }
+
   render() {
     const {cells , gameover , score} = this.state;
-    console.log(this.state);
+    console.log(this.state.snake);
     return (
       <div>
         <header>
@@ -177,7 +200,8 @@ class App extends Component {
                   ${this.isSnakeEatsApple(row.i,row.j) 
                   ? 'snake-head' : this.isApple(row.i,row.j) 
                   ? 'apple' : this.isHead(row.i,row.j) 
-                  ? 'snake-head' : ''}
+                  ? 'snake-head' : this.isTail(row.i,row.j)
+                  ? 'snake-tail' : ''}
                   `}></div>
               )
             }) 
